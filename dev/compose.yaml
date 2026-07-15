@@ -1,0 +1,22 @@
+# Local development setup — runs rdt-client in a .NET SDK container (no local SDK needed).
+#
+#   docker compose up -d      (from dev/)
+#   docker compose logs -f
+#   docker compose down
+#
+# Serves on http://127.0.0.1:6500. Database and downloads persist in dev/data (gitignored).
+# Rebuild the UI with `npx ng build` in client/ (outputs to server/RdtClient.Web/wwwroot).
+
+services:
+  rdt-client:
+    image: mcr.microsoft.com/dotnet/sdk:10.0-alpine
+    container_name: rdtc-dev
+    working_dir: /src
+    command: dotnet run --project RdtClient.Web
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+    volumes:
+      - ../server:/src
+      - ./data:/data
+    ports:
+      - "127.0.0.1:6500:6500"
