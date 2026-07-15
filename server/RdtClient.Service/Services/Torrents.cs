@@ -1029,16 +1029,36 @@ public class Torrents(
         return torrent;
     }
 
-    private static String DownloadPath(Torrent torrent, DbSettings settings)
+    /// <summary>
+    ///     Lists the sub-folders of the main download path at the given relative path. Only paths inside the download path can be listed.
+    /// </summary>
+    public virtual IList<String> GetDownloadSubfolders(String? relativePath)
     {
-        var settingDownloadPath = settings.DownloadClient.DownloadPath;
+        var basePath = settings.Current.DownloadClient.DownloadPath;
 
-        if (!String.IsNullOrWhiteSpace(torrent.Category))
+        if (String.IsNullOrWhiteSpace(basePath))
         {
-            settingDownloadPath = Path.Combine(settingDownloadPath, torrent.Category);
+            return [];
         }
 
-        return settingDownloadPath;
+        var subfolder = DownloadHelper.SanitizeSubfolder(relativePath);
+        var path = subfolder == null ? basePath : Path.Combine(basePath, subfolder);
+
+        if (!fileSystem.Directory.Exists(path))
+        {
+            return [];
+        }
+
+        return fileSystem.Directory.GetDirectories(path)
+                         .Select(m => Path.GetFileName(m))
+                         .Where(m => !String.IsNullOrWhiteSpace(m))
+                         .OrderBy(m => m, StringComparer.OrdinalIgnoreCase)
+                         .ToList();
+    }
+
+    private static String DownloadPath(Torrent torrent, DbSettings settings)
+    {
+        return DownloadHelper.GetTorrentBasePath(settings.DownloadClient.DownloadPath, torrent);
     }
 
     private async Task<String?> GetPayloadContent(Torrent torrent)
@@ -1057,6 +1077,8 @@ public class Torrents(
                                           DownloadType downloadType,
                                           Torrent torrent)
     {
+        torrent.DownloadSubfolder = DownloadHelper.SanitizeSubfolder(torrent.DownloadSubfolder);
+
         var existingTorrent = await torrentData.GetByHash(infoHash);
 
         if (existingTorrent != null)

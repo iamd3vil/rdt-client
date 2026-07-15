@@ -80,6 +80,7 @@ public class TorrentData(DataContext dataContext, ILogger<TorrentData>? logger =
             RdId = rdId,
             Hash = hash.ToLower(),
             Category = torrent.Category,
+            DownloadSubfolder = torrent.DownloadSubfolder,
             HostDownloadAction = torrent.HostDownloadAction,
             FinishedActionDelay = torrent.FinishedActionDelay,
             DownloadAction = torrent.DownloadAction,

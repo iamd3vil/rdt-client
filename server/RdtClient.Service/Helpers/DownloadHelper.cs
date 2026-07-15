@@ -6,6 +6,47 @@ namespace RdtClient.Service.Helpers;
 
 public static class DownloadHelper
 {
+    /// <summary>
+    ///     The base path for a torrent: the main download path plus the torrent's sub-folder or category.
+    /// </summary>
+    public static String GetTorrentBasePath(String settingDownloadPath, Torrent torrent)
+    {
+        var subfolder = !String.IsNullOrWhiteSpace(torrent.DownloadSubfolder) ? torrent.DownloadSubfolder : torrent.Category;
+
+        if (String.IsNullOrWhiteSpace(subfolder))
+        {
+            return settingDownloadPath;
+        }
+
+        return Path.Combine(settingDownloadPath, subfolder);
+    }
+
+    /// <summary>
+    ///     Normalizes a user-supplied sub-folder to a relative path. Throws when the path would escape the download path.
+    /// </summary>
+    public static String? SanitizeSubfolder(String? subfolder)
+    {
+        if (String.IsNullOrWhiteSpace(subfolder))
+        {
+            return null;
+        }
+
+        var segments = subfolder.Replace('\\', '/')
+                                .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (segments.Any(m => m is "." or ".."))
+        {
+            throw new($"Invalid download folder: {subfolder}");
+        }
+
+        if (segments.Length == 0)
+        {
+            return null;
+        }
+
+        return String.Join('/', segments);
+    }
+
     public static String? GetDownloadPath(String downloadPath, Torrent torrent, Download download, IFileSystem? fileSystem = null)
     {
         var fileUrl = download.Link;

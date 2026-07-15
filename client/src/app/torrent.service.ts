@@ -75,6 +75,12 @@ export class TorrentService {
     return this.http.get<RateLimitStatus | null>(`${this.baseHref}Api/Torrents/RateLimitStatus`);
   }
 
+  public getDirectories(path: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseHref}Api/Torrents/Directories`, {
+      params: { path: path ?? '' },
+    });
+  }
+
   public uploadMagnet(magnetLink: string, torrent: Torrent): Observable<void> {
     return this.http.post<void>(`${this.baseHref}Api/Torrents/UploadMagnet`, {
       magnetLink,

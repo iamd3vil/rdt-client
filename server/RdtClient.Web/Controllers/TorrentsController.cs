@@ -92,6 +92,15 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
         return Ok();
     }
 
+    [HttpGet]
+    [Route("Directories")]
+    public ActionResult<IList<String>> Directories([FromQuery] String? path)
+    {
+        var result = torrents.GetDownloadSubfolders(path);
+
+        return Ok(result);
+    }
+
     [HttpPost]
     [Route("UploadFile")]
     public async Task<ActionResult> UploadFile([FromForm] IFormFile? file,

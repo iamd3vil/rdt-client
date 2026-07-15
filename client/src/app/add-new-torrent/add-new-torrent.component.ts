@@ -35,6 +35,10 @@ export class AddNewTorrentComponent implements OnInit {
   public categories: string[] = [];
   public filteredCategories: string[] = [];
   public categoryDropdownOpen = false;
+  public downloadSubfolder = '';
+  public folderBrowserOpen = false;
+  public folderBrowserLoading = false;
+  public folderBrowserDirs: string[] = [];
   public hostDownloadAction: number = 0;
   public downloadAction: number = 0;
   public finishedAction: number = 0;
@@ -148,6 +152,40 @@ export class AddNewTorrentComponent implements OnInit {
     setTimeout(() => (this.categoryDropdownOpen = false), 150);
   }
 
+  public toggleFolderBrowser(): void {
+    this.folderBrowserOpen = !this.folderBrowserOpen;
+
+    if (this.folderBrowserOpen) {
+      this.loadFolders();
+    }
+  }
+
+  public openFolder(dir: string): void {
+    this.downloadSubfolder = this.downloadSubfolder ? `${this.downloadSubfolder}/${dir}` : dir;
+    this.loadFolders();
+  }
+
+  public upFolder(): void {
+    const separatorIndex = this.downloadSubfolder.lastIndexOf('/');
+    this.downloadSubfolder = separatorIndex >= 0 ? this.downloadSubfolder.substring(0, separatorIndex) : '';
+    this.loadFolders();
+  }
+
+  private loadFolders(): void {
+    this.folderBrowserLoading = true;
+
+    this.torrentService.getDirectories(this.downloadSubfolder).subscribe({
+      next: (dirs) => {
+        this.folderBrowserDirs = dirs;
+        this.folderBrowserLoading = false;
+      },
+      error: () => {
+        this.folderBrowserDirs = [];
+        this.folderBrowserLoading = false;
+      },
+    });
+  }
+
   public setFinishAction() {
     if (this.downloadClient === 2) {
       if (this.finishedAction === 1) {
@@ -204,6 +242,7 @@ export class AddNewTorrentComponent implements OnInit {
 
     const torrent = new Torrent();
     torrent.category = this.category;
+    torrent.downloadSubfolder = this.downloadSubfolder?.trim() || null;
     torrent.hostDownloadAction = this.hostDownloadAction;
     torrent.downloadAction = this.downloadAction;
     torrent.finishedAction = this.finishedAction;

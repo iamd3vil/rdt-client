@@ -337,4 +337,55 @@ public class DownloadHelperTest
         var expectedPath = Path.Combine("/data/downloads", torrent.RdName);
         Assert.Equal(expectedPath, path);
     }
+
+    [Theory]
+    [InlineData(null, null, "/data/downloads")]
+    [InlineData("tv", null, "/data/downloads/tv")]
+    [InlineData(null, "movies/4k", "/data/downloads/movies/4k")]
+    [InlineData("tv", "movies/4k", "/data/downloads/movies/4k")]
+    public void GetTorrentBasePath_UsesSubfolderOverCategory(String? category, String? downloadSubfolder, String expectedPath)
+    {
+        // Arrange
+        var torrent = new Torrent
+        {
+            Category = category,
+            DownloadSubfolder = downloadSubfolder
+        };
+
+        // Act
+        var path = DownloadHelper.GetTorrentBasePath("/data/downloads", torrent);
+
+        // Assert
+        Assert.Equal(expectedPath.Replace('/', Path.DirectorySeparatorChar), path);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("   ", null)]
+    [InlineData("/", null)]
+    [InlineData("movies", "movies")]
+    [InlineData("/movies/4k/", "movies/4k")]
+    [InlineData("movies\\4k", "movies/4k")]
+    [InlineData(" movies / 4k ", "movies/4k")]
+    public void SanitizeSubfolder_NormalizesPath(String? subfolder, String? expected)
+    {
+        // Act
+        var result = DownloadHelper.SanitizeSubfolder(subfolder);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("..")]
+    [InlineData("../etc")]
+    [InlineData("movies/../../etc")]
+    [InlineData("movies/.")]
+    [InlineData("..\\etc")]
+    public void SanitizeSubfolder_WhenPathEscapes_Throws(String subfolder)
+    {
+        // Act & Assert
+        Assert.ThrowsAny<Exception>(() => DownloadHelper.SanitizeSubfolder(subfolder));
+    }
 }

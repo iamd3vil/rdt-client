@@ -19,6 +19,11 @@ public class Torrent
 
     public String? Category { get; set; }
 
+    /// <summary>
+    ///     Relative sub-folder of the main download path where this download is saved. Overrides the category sub-folder when set.
+    /// </summary>
+    public String? DownloadSubfolder { get; set; }
+
     public TorrentDownloadAction DownloadAction { get; set; }
     public TorrentFinishedAction FinishedAction { get; set; }
     public Int32 FinishedActionDelay { get; set; }

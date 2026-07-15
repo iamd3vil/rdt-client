@@ -318,6 +318,9 @@ namespace RdtClient.Data.Migrations
                     b.Property<int>("DownloadRetryAttempts")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("DownloadSubfolder")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Error")
                         .HasColumnType("TEXT");
 
